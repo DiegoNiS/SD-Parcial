@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Procesamiento de Imagen en Cliente - Sistemas Distribuidos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4">Procesamiento en el Cliente</h1>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">Algoritmo de Otsu en JavaScript</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Procesamiento en Cliente:</strong> La imagen será procesada directamente en tu navegador utilizando JavaScript.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4>Imagen seleccionada del servidor:</h4>
+                        <div class="text-center">
+                            <img id="originalImage" src="{{ image_url }}" class="img-fluid" alt="Imagen Original" style="max-height: 400px;">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <button id="processButton" class="btn btn-primary">Procesar con Otsu en Cliente</button>
+                    </div>
+                    
+                    <div id="processingStatus" class="alert alert-warning" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <strong>Procesando imagen...</strong>
+                            <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="resultContainer" class="row" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h4>Imagen Original</h4>
+                                </div>
+                                <div class="card-body text-center">
+                                    <img src="{{ image_url }}" class="img-fluid" alt="Imagen Original" style="max-height: 400px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h4>Imagen Procesada con Otsu</h4>
+                                </div>
+                                <div class="card-body text-center">
+                                    <img id="processedImage" class="img-fluid" alt="Imagen Procesada" style="max-height: 400px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 text-center mt-3">
+                            <div class="alert alert-success">
+                                <p>¡La imagen ha sido procesada con éxito en tu navegador usando el algoritmo de Otsu!</p>
+                            </div>
+                            <div class="mt-3">
+                                <button id="sendToServerBtn" class="btn btn-success me-2">Enviar imagen procesada al servidor</button>
+                                <a id="downloadBtn" href="#" class="btn btn-primary me-2" download="otsu_processed.png">Descargar imagen procesada</a>
+                                <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al inicio</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/otsu_cliente.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const originalImage = document.getElementById('originalImage');
+        const processButton = document.getElementById('processButton');
+        const processingStatus = document.getElementById('processingStatus');
+        const resultContainer = document.getElementById('resultContainer');
+        const processedImage = document.getElementById('processedImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const sendToServerBtn = document.getElementById('sendToServerBtn');
+        
+        // Guardar nombre de archivo para uso posterior
+        const filename = "{{ filename }}";
+        
+        // Procesar imagen cuando se hace clic en el botón
+        processButton.addEventListener('click', function() {
+            // Mostrar estado de procesamiento
+            processingStatus.style.display = 'block';
+            processButton.disabled = true;
+            
+            // Aplicar algoritmo de Otsu en el cliente
+            aplicarOtsuCliente(originalImage, function(dataURL) {
+                // Actualizar imagen procesada
+                processedImage.src = dataURL;
+                
+                // Configurar botón de descarga
+                downloadBtn.href = dataURL;
+                
+                // Ocultar estado de procesamiento y mostrar resultados
+                processingStatus.style.display = 'none';
+                resultContainer.style.display = 'block';
+            });
+        });
+        
+        // Enviar imagen procesada al servidor
+        sendToServerBtn.addEventListener('click', function() {
+            // Deshabilitar botón mientras se envía
+            sendToServerBtn.disabled = true;
+            sendToServerBtn.textContent = 'Enviando...';
+            
+            // Enviar imagen procesada al servidor
+            fetch('/save_processed_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image_data: processedImage.src,
+                    filename: filename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirigir a la página de resultados
+                    window.location.href = "{{ url_for('process_image', filename=filename, option='client_processing') }}";
+                } else {
+                    alert('Error al guardar la imagen en el servidor: ' + data.error);
+                    sendToServerBtn.disabled = false;
+                    sendToServerBtn.textContent = 'Enviar imagen procesada al servidor';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al enviar la imagen al servidor');
+                sendToServerBtn.disabled = false;
+                sendToServerBtn.textContent = 'Enviar imagen procesada al servidor';
+            });
+        });
+    });
+</script>
+{% endblock %}

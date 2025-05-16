@@ -1,0 +1,99 @@
+/* Estilos personalizados para la aplicación */
+
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilos para mostrar imágenes en tarjetas */
+.card-img-top {
+    height: 150px;
+    object-fit: cover;
+}
+
+/* Estilos para botones */
+.btn {
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Animación para imagen procesada */
+.img-fluid {
+    transition: transform 0.3s ease;
+}
+
+.img-fluid:hover {
+    transform: scale(1.05);
+}
+
+/* Estilos para la página de resultados */
+.result-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Estilos para vista previa de procesamiento en cliente */
+#previewContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.preview-item {
+    flex: 0 0 48%;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.preview-image {
+    max-height: 300px;
+    margin: 10px auto;
+    display: block;
+    border-radius: 5px;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 120px;
+    }
+    
+    .preview-item {
+        flex: 0 0 100%;
+    }
+}

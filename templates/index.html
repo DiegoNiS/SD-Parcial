@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Procesamiento de Imágenes - Sistemas Distribuidos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4">Procesamiento de Imágenes Distribuido</h1>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">Algoritmo de Otsu</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h4>Opciones de Procesamiento:</h4>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="processingOption" id="serverToClient" value="server_to_client" checked>
+                            <label class="form-check-label" for="serverToClient">
+                                Leer imagen del servidor, modificarla y guardar en cliente
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="processingOption" id="clientToServer" value="client_to_server">
+                            <label class="form-check-label" for="clientToServer">
+                                Leer imagen del cliente, modificarla y enviar al servidor
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="processingOption" id="clientProcessing" value="client_processing">
+                            <label class="form-check-label" for="clientProcessing">
+                                <strong>Procesar en el cliente (Otsu en JavaScript)</strong>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Sección para seleccionar imagen del servidor -->
+                    <div id="serverImageSection" class="mb-4">
+                        <h4>Imágenes disponibles en el servidor:</h4>
+                        {% if server_images %}
+                            <form action="{{ url_for('select_server_image') }}" method="post">
+                                <div class="row">
+                                    {% for image in server_images %}
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card">
+                                            <img src="{{ url_for('static', filename='images/uploads/' + image) }}" class="card-img-top" alt="{{ image }}">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="server_image" id="img_{{ loop.index }}" value="{{ image }}" required>
+                                                    <label class="form-check-label" for="img_{{ loop.index }}">
+                                                        {{ image[:20] }}{% if image|length > 20 %}...{% endif %}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="option" id="serverImageOption" value="server_to_client">
+                                <button type="submit" class="btn btn-success mt-3">Procesar imagen seleccionada</button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No hay imágenes disponibles en el servidor. Por favor, sube una imagen.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Sección para subir imagen desde el cliente -->
+                    <div id="clientImageSection" class="mb-4">
+                        <h4>Subir nueva imagen:</h4>
+                        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                            <div class="mb-3">
+                                <label for="formFile" class="form-label">Selecciona una imagen:</label>
+                                <input class="form-control" type="file" id="formFile" name="file" accept="image/*" required>
+                            </div>
+                            <input type="hidden" name="option" id="uploadOption" value="server_to_client">
+                            <button type="submit" class="btn btn-primary" id="regularSubmitBtn">Subir y procesar</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Sección de procesamiento en cliente (nueva) - Creada dinámicamente por JS -->
+                    <div id="clientProcessingSection" class="mb-4" style="display: none;">
+                        <div class="alert alert-info">
+                            <strong>Procesamiento en Cliente:</strong> La imagen será procesada directamente en tu navegador utilizando JavaScript.
+                        </div>
+                        
+                        <!-- Contenedor para vista previa de imágenes - Creado dinámicamente por JS -->
+                        <div id="previewContainer" class="row mb-3">
+                            <!-- Las vistas previas se cargarán aquí -->
+                        </div>
+                        
+                        <!-- Botón creado dinámicamente por JS si no existe -->
+                        <button id="clientSubmitBtn" class="btn btn-success mt-3" disabled>
+                            Enviar imagen procesada al servidor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/otsu_cliente.js') }}"></script>
+{% endblock %}
