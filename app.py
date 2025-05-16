@@ -8,16 +8,22 @@ from PIL import Image
 import io
 import base64
 
-app = Flask(__name__)
+# Obtener la ruta absoluta del directorio actual
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Configuración de directorios para imágenes
-UPLOAD_FOLDER = os.path.join('static', 'images', 'uploads')
-PROCESSED_FOLDER = os.path.join('static', 'images', 'processed')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'images', 'uploads')
+PROCESSED_FOLDER = os.path.join(BASE_DIR, 'static', 'images', 'processed')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # Asegurar que las carpetas existan
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
+
+# Inicializar Flask con configuración explícita de carpetas estáticas
+app = Flask(__name__,
+           static_folder=os.path.join(BASE_DIR, 'static'),
+           static_url_path='/static')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
@@ -113,9 +119,9 @@ def upload_file():
             import shutil
             shutil.copy(filepath, processed_path)
             
-            # Rutas relativas para mostrar en la plantilla
-            original_image = f"images/uploads/{unique_filename}"
-            processed_image = f"images/processed/{processed_filename}"
+            # Rutas relativas para mostrar en la plantilla usando os.path.join
+            original_image = os.path.join('images', 'uploads', unique_filename)
+            processed_image = os.path.join('images', 'processed', processed_filename)
             
             return render_template('result.html', 
                                 original_image=original_image, 
@@ -142,7 +148,7 @@ def select_server_image():
         if option == 'client_processing':
             # Para procesar en cliente, enviamos directamente a la página de procesamiento cliente
             return render_template('client_processing.html', 
-                                  image_url=url_for('static', filename=f'images/uploads/{selected_image}'),
+                                  image_url=url_for('static', filename=os.path.join('images', 'uploads', selected_image)),
                                   filename=selected_image)
         else:
             # Procesamiento normal en servidor
@@ -179,9 +185,9 @@ def process_image(filename, option):
         print(f"ERROR: La imagen procesada no se creó en {processed_path}")
         return redirect(url_for('index'))
     
-    # Rutas relativas para mostrar en la plantilla
-    original_image = f"images/uploads/{filename}"
-    processed_image = f"images/processed/{processed_filename}"
+    # Rutas relativas para mostrar en la plantilla usando os.path.join
+    original_image = os.path.join('images', 'uploads', filename)
+    processed_image = os.path.join('images', 'processed', processed_filename)
     
     print(f"Ruta de imagen original para plantilla: {original_image}")
     print(f"Ruta de imagen procesada para plantilla: {processed_image}")
@@ -259,7 +265,7 @@ def save_processed_image():
             'success': True,
             'message': 'Imagen procesada guardada exitosamente',
             'processed_filename': processed_filename,
-            'url': url_for('static', filename=f'images/processed/{processed_filename}')
+            'url': url_for('static', filename=os.path.join('images', 'processed', processed_filename))
         })
     
     except Exception as e:
